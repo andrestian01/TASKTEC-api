@@ -7,7 +7,8 @@ const taskSchema = new mongoose.Schema({
   deadline: { type: Date, required: true },
   completed: { type: Boolean, default: false },
   completedAt: { type: Date, default: '' },
-  timeTaken: { type: Number, default: 0 } // Tiempo en milisegundos
+  timeTaken: { type: Number, default: 0 }, // Tiempo en milisegundos
+  category: { type: String, default: '' },
 }, { timestamps: true }); // Añadir timestamps aquí
 
 const Task = mongoose.model('Task', taskSchema);
