@@ -1,9 +1,13 @@
+# schema.graphql
 type Task {
   id: ID!
   title: String!
   description: String!
   deadline: String!
   completed: Boolean!
+  timeTaken: Int! # Tiempo en milisegundos
+  createdAt: String!
+  completedAt: String!
 }
 
 type Query {

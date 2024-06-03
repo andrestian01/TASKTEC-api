@@ -1,37 +1,40 @@
+// resolvers.mjs
 import { PubSub } from 'graphql-subscriptions';
+import Task from './models/Task.mjs';
 
 const pubsub = new PubSub();
 
-
-let tasks = [
-  { id: '1', title: 'Hacer la compra', description: 'Comprar leche y pan', deadline: '2024-05-10', completed: false },
-  { id: '2', title: 'Preparar presentación', description: 'Preparar diapositivas para la reunión', deadline: '2024-05-15', completed: false }
-];
-
 export const resolvers = {
   Query: {
-    tasks: () => tasks
+    tasks: async () => {
+      return await Task.find();
+    },
   },
   Mutation: {
-    addTask: (_, { title, description, deadline }) => {
-      const newTask = { id: String(tasks.length + 1), title, description, deadline, completed: false };
-      tasks.push(newTask);
+    addTask: async (_, { title, description, deadline }) => {
+      const createdAt = new Date();
+      const newTask = new Task({ title, description, deadline, createdAt });
+      await newTask.save();
       pubsub.publish('TASK_ADDED', { taskAdded: newTask });
       return newTask;
     },
-    updateTaskStatus: (_, { id, completed }) => {
-      const taskIndex = tasks.findIndex(task => task.id === id);
-      if (taskIndex === -1) throw new Error("Task not found");
-      tasks[taskIndex].completed = completed;
-      return tasks[taskIndex];
+    updateTaskStatus: async (_, { id, completed }) => {
+      const task = await Task.findById(id);
+      if (!task) throw new Error("Task not found");
+      task.completed = completed;
+      if (completed) {
+        task.timeTaken = Date.now() - task.createdAt.getTime();
+        task.completedAt = new Date();
+      }
+      await task.save();
+      return task;
     },
-    deleteTask: (_, { id }) => {
-      const taskIndex = tasks.findIndex(task => task.id === id);
-      if (taskIndex === -1) throw new Error("Task not found");
-      const deletedTask = tasks.splice(taskIndex, 1);
-      pubsub.publish('TASK_DELETED', { taskDeleted: deletedTask[0] });
-      return deletedTask[0];
-    }
+    deleteTask: async (_, { id }) => {
+      const task = await Task.findByIdAndDelete(id);
+      if (!task) throw new Error("Task not found");
+      pubsub.publish('TASK_DELETED', { taskDeleted: task });
+      return task;
+    },
   },
   Subscription: {
     taskAdded: {
@@ -39,6 +42,6 @@ export const resolvers = {
     },
     taskDeleted: {
       subscribe: () => pubsub.asyncIterator(['TASK_DELETED'])
-    }
-  }
+    },
+  },
 };
