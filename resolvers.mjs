@@ -4,6 +4,13 @@ import Task from './models/Task.mjs';
 
 const pubsub = new PubSub();
 
+
+// Datos iniciales de ejemplo con un nuevo campo 'category'
+let tasks = [
+  { id: '1', title: 'Hacer la compra', description: 'Comprar leche y pan', deadline: '2024-05-10', completed: false, category: 'Personal' },
+  { id: '2', title: 'Preparar presentación', description: 'Preparar diapositivas para la reunión', deadline: '2024-05-15', completed: false, category: 'Trabajo' }
+];
+
 export const resolvers = {
   Query: {
     tasks: async () => {
@@ -11,9 +18,9 @@ export const resolvers = {
     },
   },
   Mutation: {
-    addTask: async (_, { title, description, deadline }) => {
+    addTask: async (_, { title, description, deadline, category }) => {
       const createdAt = new Date();
-      const newTask = new Task({ title, description, deadline, createdAt });
+      const newTask = new Task({ title, description, deadline, createdAt, category });
       await newTask.save();
       pubsub.publish('TASK_ADDED', { taskAdded: newTask });
       return newTask;

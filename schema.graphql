@@ -8,6 +8,7 @@ type Task {
   timeTaken: Int! # Tiempo en milisegundos
   createdAt: String!
   completedAt: String!
+  category: String! # Nuevo campo obligatorio para la categoría
 }
 
 type Query {
@@ -15,7 +16,7 @@ type Query {
 }
 
 type Mutation {
-  addTask(title: String!, description: String!, deadline: String!): Task!
+  addTask(title: String!, description: String!, deadline: String!, category: String!): Task!
   updateTaskStatus(id: ID!, completed: Boolean!): Task!
   deleteTask(id: ID!): Task!
 }
