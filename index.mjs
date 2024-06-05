@@ -1,4 +1,4 @@
-// index.msj
+// index.mjs
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
@@ -8,6 +8,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { createServer } from 'http';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import './database/db.mjs';
+import { authMiddleware } from './middleware/auth.js';
 import { resolvers } from './resolvers.mjs';
 
 const typeDefs = readFileSync('./schema.graphql', 'utf8');
@@ -20,9 +21,14 @@ const schema = makeExecutableSchema({
 });
 
 const app = express();
+app.use(authMiddleware); // Aplica el middleware de autenticación
+
 const apolloServer = new ApolloServer({
   schema,
-  context: { pubsub },
+  context: ({ req }) => ({
+    pubsub,
+    user: req.user, // Incluye el usuario autenticado en el contexto
+  }),
 });
 
 async function startApolloServer() {

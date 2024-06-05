@@ -1,14 +1,27 @@
 # schema.graphql
+type User {
+  id: ID!
+  username: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
 type Task {
   id: ID!
   title: String!
   description: String!
   deadline: String!
   completed: Boolean!
-  timeTaken: Int! # Tiempo en milisegundos
+  timeTaken: Int!
   createdAt: String!
   completedAt: String!
-  category: String! # Nuevo campo obligatorio para la categoría
+  category: String!
+  userId: ID!
 }
 
 type Query {
@@ -16,6 +29,8 @@ type Query {
 }
 
 type Mutation {
+  register(username: String!, password: String!): AuthPayload!
+  login(username: String!, password: String!): AuthPayload!
   addTask(title: String!, description: String!, deadline: String!, category: String!): Task!
   updateTaskStatus(id: ID!, completed: Boolean!): Task!
   deleteTask(id: ID!): Task!

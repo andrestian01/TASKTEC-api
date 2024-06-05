@@ -1,32 +1,48 @@
 // resolvers.mjs
+import bcrypt from 'bcryptjs';
 import { PubSub } from 'graphql-subscriptions';
+import jwt from 'jsonwebtoken';
 import Task from './models/Task.mjs';
+import User from './models/User.mjs';
 
 const pubsub = new PubSub();
-
-
-// Datos iniciales de ejemplo con un nuevo campo 'category'
-let tasks = [
-  { id: '1', title: 'Hacer la compra', description: 'Comprar leche y pan', deadline: '2024-05-10', completed: false, category: 'Personal' },
-  { id: '2', title: 'Preparar presentación', description: 'Preparar diapositivas para la reunión', deadline: '2024-05-15', completed: false, category: 'Trabajo' }
-];
+const JWT_SECRET = 'tasktec'; // Cambia esto a una clave secreta segura
 
 export const resolvers = {
   Query: {
-    tasks: async () => {
-      return await Task.find();
+    tasks: async (_, __, { user }) => {
+      if (!user) throw new Error("Not authenticated");
+      return await Task.find({ userId: user.id });
     },
   },
   Mutation: {
-    addTask: async (_, { title, description, deadline, category }) => {
-      const createdAt = new Date();
-      const newTask = new Task({ title, description, deadline, createdAt, category });
+    register: async (_, { username, password }) => {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = new User({ username, password: hashedPassword });
+      await user.save();
+      const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET);
+      return { token, user };
+    },
+    login: async (_, { username, password }) => {
+      const user = await User.findOne({ username });
+      if (!user) throw new Error("User not found");
+
+      const valid = await bcrypt.compare(password, user.password);
+      if (!valid) throw new Error("Incorrect password");
+
+      const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET);
+      return { token, user };
+    },
+    addTask: async (_, { title, description, deadline, category }, { user }) => {
+      if (!user) throw new Error("Not authenticated");
+      const newTask = new Task({ title, description, deadline, userId: user.id, category });
       await newTask.save();
       pubsub.publish('TASK_ADDED', { taskAdded: newTask });
       return newTask;
     },
-    updateTaskStatus: async (_, { id, completed }) => {
-      const task = await Task.findById(id);
+    updateTaskStatus: async (_, { id, completed }, { user }) => {
+      if (!user) throw new Error("Not authenticated");
+      const task = await Task.findOne({ _id: id, userId: user.id });
       if (!task) throw new Error("Task not found");
       task.completed = completed;
       if (completed) {
@@ -36,8 +52,9 @@ export const resolvers = {
       await task.save();
       return task;
     },
-    deleteTask: async (_, { id }) => {
-      const task = await Task.findByIdAndDelete(id);
+    deleteTask: async (_, { id }, { user }) => {
+      if (!user) throw new Error("Not authenticated");
+      const task = await Task.findOneAndDelete({ _id: id, userId: user.id });
       if (!task) throw new Error("Task not found");
       pubsub.publish('TASK_DELETED', { taskDeleted: task });
       return task;
@@ -52,3 +69,8 @@ export const resolvers = {
     },
   },
 };
+
+
+
+
+
