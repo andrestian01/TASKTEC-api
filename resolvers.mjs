@@ -21,9 +21,9 @@ export const resolvers = {
     },
   },
   Mutation: {
-    addTask: async (_, { title, description, deadline, category }) => {
+    addTask: async (_, { title, description, deadline, category,imageUrl }) => {
       const createdAt = new Date();
-      const newTask = new Task({ title, description, deadline, createdAt, category });
+      const newTask = new Task({ title, description, deadline, createdAt, category,imageUrl: imageUrl || ''});
       await newTask.save();
       pubsub.publish('TASK_ADDED', { taskAdded: newTask });
       return newTask;

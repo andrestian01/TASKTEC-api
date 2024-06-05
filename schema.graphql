@@ -9,6 +9,7 @@ type Task {
   createdAt: String!
   completedAt: String!
   category: String! # Nuevo campo obligatorio para la categoría
+  imageUrl: String
 }
 
 type Query {
@@ -17,7 +18,7 @@ type Query {
 }
 
 type Mutation {
-  addTask(title: String!, description: String!, deadline: String!, category: String!): Task!
+  addTask(title: String!, description: String!, deadline: String!, category: String!,imageUrl: String): Task!
   updateTaskStatus(id: ID!, completed: Boolean!): Task!
   deleteTask(id: ID!): Task!
 }
