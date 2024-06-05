@@ -14,10 +14,15 @@ export const resolvers = {
       if (!user) throw new Error("Not authenticated");
       return await Task.find({ userId: user.id });
     },
+
     // getTask: async (_, { id }, { user }) => { // Implementación de la función getTask
     //   if (!user) throw new Error("Not authenticated");
     //   return await Task.findOne({ _id: id, userId: user.id });
     // }
+
+    filterTasksByTitle: async (_, { title }) => {
+      return await Task.find({ title: new RegExp(title, 'i') }); // Búsqueda insensible a mayúsculas y minúsculas
+    },
   },
   Mutation: {
     register: async (_, { username, password }) => {

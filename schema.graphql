@@ -26,6 +26,7 @@ type Task {
 
 type Query {
   tasks: [Task!]!
+  filterTasksByTitle(title: String!): [Task!]!
 }
 
 type Mutation {
