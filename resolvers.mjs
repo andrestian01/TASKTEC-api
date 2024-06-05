@@ -16,6 +16,9 @@ export const resolvers = {
     tasks: async () => {
       return await Task.find();
     },
+    filterTasksByTitle: async (_, { title }) => {
+      return await Task.find({ title: new RegExp(title, 'i') }); // Búsqueda insensible a mayúsculas y minúsculas
+    },
   },
   Mutation: {
     addTask: async (_, { title, description, deadline, category }) => {
