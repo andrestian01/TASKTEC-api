@@ -33,6 +33,7 @@ type Mutation {
   login(username: String!, password: String!): AuthPayload!
   addTask(title: String!, description: String!, deadline: String!, category: String!): Task!
   updateTaskStatus(id: ID!, completed: Boolean!): Task!
+   updateTask(id: ID!, title: String!, description: String!, deadline: String!, completed: Boolean!, timeTaken: Int!, category: String!): Task!
   deleteTask(id: ID!): Task!
 }
 

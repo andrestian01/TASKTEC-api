@@ -14,6 +14,10 @@ export const resolvers = {
       if (!user) throw new Error("Not authenticated");
       return await Task.find({ userId: user.id });
     },
+    // getTask: async (_, { id }, { user }) => { // Implementación de la función getTask
+    //   if (!user) throw new Error("Not authenticated");
+    //   return await Task.findOne({ _id: id, userId: user.id });
+    // }
   },
   Mutation: {
     register: async (_, { username, password }) => {
@@ -40,6 +44,17 @@ export const resolvers = {
       pubsub.publish('TASK_ADDED', { taskAdded: newTask });
       return newTask;
     },
+    // updateTask: async (_, { id, title, description, deadline, completed, timeTaken, category }, { user }) => {
+    //   if (!user) {
+    //     throw new Error('Unauthorized');
+    //   }
+
+    //   const updatedTask = await Task.findByIdAndUpdate(id, { title, description, deadline, completed, timeTaken, category }, { new: true });
+    //   pubsub.publish('taskUpdated', { taskUpdated: updatedTask });
+
+    //   await task.save();
+    //   return updatedTask;
+    // },
     updateTaskStatus: async (_, { id, completed }, { user }) => {
       if (!user) throw new Error("Not authenticated");
       const task = await Task.findOne({ _id: id, userId: user.id });
